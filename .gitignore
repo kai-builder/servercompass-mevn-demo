@@ -1,10 +1,27 @@
+# Dependencies
 node_modules/
-npm-debug.log*
+client/node_modules/
+server/node_modules/
+
+# Vue build output
+client/dist/
+
+# Environment files
 .env
 .env.local
+.env.*.local
 .env.production
-.DS_Store
+
+# Logs
+npm-debug.log*
+*.log
+
+# Editor
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,49 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:       #0c1427;
+  --surface:  #121c33;
+  --border:   #1f2c44;
+  --text:     #e9efff;
+  --muted:    #a8bad8;
+  --accent:   #6ee7d3;
+  --accent-2: #7fb7ff;
+  --warning:  #f5d06f;
+  --danger:   #f87171;
+  --success:  #4ade80;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Manrope', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

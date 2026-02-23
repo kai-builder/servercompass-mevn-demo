@@ -1,29 +1,38 @@
 # syntax=docker/dockerfile:1
-# ── Stage 1: install dependencies ────────────────────────────────────────────
-FROM node:22-alpine AS deps
 
-WORKDIR /app
+# ── Stage 1: Build Vue 3 frontend ────────────────────────────────────────────
+FROM node:22-alpine AS client-builder
 
-# Copy manifest files first so this layer is cached independently of
-# source-code changes (re-runs only when package*.json change).
-COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev
+WORKDIR /app/client
 
-# ── Stage 2: minimal runtime ─────────────────────────────────────────────────
+# Copy manifest first — layer is cached until package*.json changes
+COPY client/package*.json ./
+RUN npm ci
+
+# Copy source and build
+COPY client/ .
+RUN npm run build
+
+# ── Stage 2: Minimal production runtime ──────────────────────────────────────
 FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy production node_modules from the deps stage
-COPY --from=deps /app/node_modules ./node_modules
+# Install server dependencies (production only)
+COPY server/package*.json ./server/
+RUN cd server && npm ci --omit=dev
 
-# Copy application source
-COPY package.json ./
-COPY server.js    ./
+# Copy Express source
+COPY server/ ./server/
+
+# Copy Vue build output from client-builder stage
+COPY --from=client-builder /app/client/dist ./client/dist
 
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD wget -qO- http://localhost:3000/health || exit 1
 
-CMD ["node", "server.js"]
+ENV NODE_ENV=production
+
+CMD ["node", "server/index.js"]

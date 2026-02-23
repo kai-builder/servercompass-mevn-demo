@@ -1,98 +1,132 @@
-# MEVN Demo - Server Compass
+# MEVN Stack Demo — Server Compass
 
-> A production-ready MEVN stack application template for self-hosting with [Server Compass](https://servercompass.app/)
+> A production-ready MEVN stack application template for self-hosting with [Server Compass](https://servercompass.app/).
 
-MEVN (MongoDB + Express + Vue + Node.js) is one of the most popular full-stack JavaScript combinations for building modern web applications. This demo shows how to install MEVN, containerize it, and deploy MEVN to a VPS in minutes using Server Compass.
+**MongoDB · Express · Vue 3 · Node.js** — deploy this full-stack JavaScript app to any VPS in minutes.
 
-## Features
+## What Is This?
 
-- Express.js backend serving a clean Vue-compatible UI
-- Public environment variables displayed on the landing page
-- JSON endpoint at `/api/env` for API consumers
-- Health check at `/health` for container orchestration
-- Private values (`DATABASE_URL`, `API_SECRET_KEY`) kept server-side only
-- Optimized multi-stage Docker build with layer caching
+This demo showcases how to self host a MEVN stack application using [Server Compass](https://servercompass.app/). It uses a proper monorepo structure with a Vue 3 frontend (built with Vite) and an Express backend, exactly as you would structure a production MEVN app.
 
-## Quick Start
+- **Vue 3 frontend** — Composition API, `<script setup>`, TypeScript, built with Vite
+- **Express backend** — serves the Vue build, exposes `/api/env` and `/health`
+- **MongoDB-ready** — `DATABASE_URL` wired for MongoDB connection string
+- **Multi-stage Docker build** — optimized for minimal image size and fast rebuilds
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/kai-builder/servercompass-mevn-demo.git
-cd servercompass-mevn-demo
+## Project Structure
 
-# 2. Copy the example environment file
-cp .env.example .env
-
-# 3. Install dependencies
-npm install
-
-# 4. Start the development server
-npm run dev
 ```
-
-Visit `http://localhost:3000` for the UI or `http://localhost:3000/api/env` for JSON.
+servercompass-mevn-demo/
+├── client/                 # Vue 3 frontend (Vite + TypeScript)
+│   ├── index.html
+│   ├── vite.config.ts
+│   ├── tsconfig.json
+│   └── src/
+│       ├── main.ts
+│       ├── App.vue         # Dashboard fetching /api/env
+│       └── style.css
+├── server/                 # Express backend
+│   ├── index.js
+│   └── package.json
+├── package.json            # Root scripts
+├── Dockerfile
+└── .env.example
+```
 
 ## Environment Variables
 
-| Variable        | Description                          | Public |
-|-----------------|--------------------------------------|--------|
-| `APP_NAME`      | Application display name             | Yes    |
-| `API_URL`       | Server Compass API endpoint          | Yes    |
-| `ENVIRONMENT`   | Deployment environment               | Yes    |
-| `VERSION`       | Application version                  | Yes    |
-| `DATABASE_URL`  | MongoDB connection string            | No     |
-| `API_SECRET_KEY`| Secret key for API authentication    | No     |
-| `PORT`          | HTTP port (default: 3000)            | No     |
+| Variable | Public | Description |
+|---|---|---|
+| `APP_NAME` | Yes | Application name displayed in the UI |
+| `API_URL` | Yes | Server Compass API endpoint |
+| `ENVIRONMENT` | Yes | Deployment environment (`production`, `staging`) |
+| `VERSION` | Yes | Application version |
+| `DATABASE_URL` | No | MongoDB connection string — server-side only |
+| `API_SECRET_KEY` | No | API secret — server-side only |
 
-Public variables are shown in the UI and `/api/env`. Private variables remain on the server.
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+## API Endpoints
+
+| Endpoint | Description |
+|---|---|
+| `GET /` | Vue 3 dashboard (public env vars displayed) |
+| `GET /api/env` | JSON — public environment variables |
+| `GET /health` | Health check `{ "status": "ok" }` |
+
+## Local Development
+
+### Prerequisites
+- Node.js 22+
+- npm 10+
+
+### Install dependencies
+
+```bash
+# Install client and server dependencies
+cd client && npm install && cd ..
+cd server && npm install && cd ..
+```
+
+### Run in development mode
+
+```bash
+# Terminal 1 — Express backend (port 3000)
+npm run dev:server
+
+# Terminal 2 — Vue Vite dev server (port 5173, proxies /api to :3000)
+npm run dev:client
+```
+
+Open [http://localhost:5173](http://localhost:5173).
 
 ## Docker
 
+### Build
+
 ```bash
-# Build the image
 docker build -t servercompass-mevn-demo .
+```
 
-# Run with environment variables
+### Run
+
+```bash
 docker run -p 3000:3000 --env-file .env servercompass-mevn-demo
+```
 
-# Run with inline variables
+Open [http://localhost:3000](http://localhost:3000).
+
+### Environment variables inline
+
+```bash
 docker run -p 3000:3000 \
   -e APP_NAME="My MEVN App" \
-  -e ENVIRONMENT=production \
-  -e VERSION=1.0.0 \
+  -e API_URL="https://api.servercompass.app" \
+  -e ENVIRONMENT="production" \
+  -e VERSION="1.0.0" \
+  -e DATABASE_URL="mongodb://user:password@host:27017/db" \
+  -e API_SECRET_KEY="your-secret" \
   servercompass-mevn-demo
 ```
 
-The Dockerfile uses a two-stage build:
-1. **deps** - installs production dependencies with `npm ci --omit=dev`
-2. **runtime** - copies only what is needed into a minimal `node:22-alpine` image
-
 ## Deploy to Your VPS
 
-Deploy this MEVN application to any VPS in minutes with [Server Compass](https://servercompass.app/) - the modern way to self host MEVN applications.
+Deploy this MEVN stack application to any VPS in minutes with [Server Compass](https://servercompass.app/) — the modern way to self host MEVN apps on your own server.
 
-1. Sign in to [Server Compass](https://servercompass.app/)
-2. Connect your VPS
+1. Push this repo to GitHub
+2. Connect your VPS to [Server Compass](https://servercompass.app/)
 3. Point Server Compass at this repository
-4. Set your environment variables in the dashboard
-5. Deploy
+4. Set your environment variables in the Server Compass dashboard
+5. Deploy — Server Compass builds the Docker image and runs it
 
-Server Compass handles Docker builds, zero-downtime restarts, SSL certificates, and environment variable management so you can focus on your application.
+## Keywords
 
-## Endpoints
-
-| Endpoint    | Description                              |
-|-------------|------------------------------------------|
-| `GET /`     | Landing page with public env vars        |
-| `GET /api/env` | JSON response with public env vars    |
-| `GET /health`  | Health check (`{"status":"ok"}`)      |
-
-## Deployed with Server Compass
-
-This demo is maintained by the [Server Compass](https://servercompass.app/) team to showcase how easy it is to self host MEVN stack applications on your own infrastructure.
-
-GitHub: https://github.com/kai-builder/servercompass-mevn-demo
+self host MEVN, deploy MEVN to VPS, install MEVN stack, MEVN docker deployment, self-hosted Vue Express MongoDB, Vue 3 self-hosted, Express Node.js VPS deployment, MEVN stack production
 
 ---
 
-**Keywords:** self host MEVN, deploy MEVN to VPS, install MEVN, MEVN docker deployment, self-hosted MEVN stack, MongoDB Express Vue Node.js self hosting
+Deployed with [Server Compass](https://servercompass.app/) — self-host MEVN stack apps on your own VPS.
